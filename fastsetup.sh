@@ -1,39 +1,48 @@
+
 #!/bin/bash
 
-# Exit immediately if a command exits with a non-zero status
-set -e
+# Define variables
+PROJECT_DIR="/home/ubuntu/ocr-py-new/ocr-py"
+MAIN_FILE="main.py"
+REQUIREMENTS_FILE="$PROJECT_DIR/requirements.txt"
+PYTHON_CMD="/usr/bin/python3"
+VENV_DIR="$PROJECT_DIR/venv"
+AWS_REGION="us-east-1"  # Set your preferred region here
 
-# Define the Python version and main file
-PYTHON_VERSION=python3  # Change this if you want to use a specific Python version
-MAIN_FILE=main.py        # Change this to the name of your main Python file
-VENV_DIR=venv            # Directory for the virtual environment
-AWS_REGION=us-east-1     # Set your AWS region here
+# Update system packages
+echo "***** Updating system packages *****"
+sudo apt-get update -y
+
+# Install Python3, pip, and virtualenv if they are not installed
+echo "***** Installing Python3, pip, and virtualenv *****"
+sudo apt-get install python3 python3-pip python3-venv -y
+
+# Navigate to the project directory
+cd "$PROJECT_DIR" || { echo "Project directory not found!"; exit 1; }
 
 # Create a virtual environment
-echo "Creating a virtual environment in the directory: $VENV_DIR"
-$PYTHON_VERSION -m venv $VENV_DIR
+echo "***** Creating Python virtual environment *****"
+python3 -m venv "$VENV_DIR"
 
 # Activate the virtual environment
-echo "Activating the virtual environment"
-source $VENV_DIR/bin/activate
+source "$VENV_DIR/bin/activate"
 
-# Upgrade pip
-echo "Upgrading pip"
-pip install --upgrade pip
+# Install Python dependencies from requirements.txt
+if [ -f "$REQUIREMENTS_FILE" ]; then
+    echo "***** Installing dependencies from requirements.txt *****"
+    pip install -r "$REQUIREMENTS_FILE"
+else
+    echo "requirements.txt not found in the project directory!"
+    deactivate
+    exit 1
+fi
 
-# Install required packages from requirements.txt
-echo "Installing requirements from requirements.txt"
-pip install -r requirements.txt
+# Specify AWS region for any AWS commands
+export AWS_DEFAULT_REGION=$AWS_REGION
 
-# Export the AWS region as an environment variable
-export AWS_REGION
+# Start FastAPI server by calling the main file directly
+echo "***** Starting FastAPI server *****"
+python "$MAIN_FILE"
 
-# Optionally print the AWS region to confirm it's set
-echo "AWS Region is set to: $AWS_REGION"
-
-# Run the main Python script
-echo "Running the main Python script: $MAIN_FILE"
-$PYTHON_VERSION $MAIN_FILE
-
-# Deactivate the virtual environment (optional)
+# Deactivate virtual environment when done
 deactivate
