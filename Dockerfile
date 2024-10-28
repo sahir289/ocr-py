@@ -18,6 +18,9 @@ COPY . /app
 RUN python3 -m venv venv
 RUN ./venv/bin/pip install --no-cache-dir -r requirements.txt
 
+# Set the AWS region as an environment variable
+ENV AWS_REGION=us-east-1
+
 # Expose the port that FastAPI will run on
 EXPOSE 8000
 
