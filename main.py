@@ -37,9 +37,7 @@ def get_ocr(file_data: Any = Body(None)):
     try:
         ocr_extractor = OCRExtractor()
         results = ocr_extractor.get_extracted_data(file_data)
-
         print(f"results : {results}")
-
         return {
             "status": "success",
             "data": results
@@ -53,7 +51,7 @@ def get_ocr(file_data: Any = Body(None)):
 if __name__ == '__main__':
     try:
         print("App server init called")
-        uvicorn.run(app, host="0.0.0.0", port=11000)
+        uvicorn.run(app, host="0.0.0.0", port=8000)
         print("Server started")
     except Exception:
         print("Exception in app start: ")

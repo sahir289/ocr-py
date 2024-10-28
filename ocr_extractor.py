@@ -172,17 +172,6 @@ class OCRExtractor:
                 if amount:
                     return amount.group(0)
 
-                '''
-                cleaned_text = str(text).replace(" ", "")
-                cleaned_text = cleaned_text.replace(",", "")
-                if not cleaned_text.replace(".", "", 1).isdigit():
-                    continue
-                amount = re.search(
-                    r"\d{1,3}(?:,\d{1,3})*(?:\.\d{2})?\b|\d+\.\d{2}\b",
-                    cleaned_text)
-                if amount:
-                    return amount.group(0)
-                '''
             except Exception as exc:
                 print(f"extract_fallback_amount Error : {exc}")
 
