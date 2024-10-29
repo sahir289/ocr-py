@@ -1,9 +1,12 @@
+import os
 import re
 from typing import Optional
 
 import boto3
 
 from image_processor import ImageProcessor
+
+region_name = os.environ.get('AWS_REGION')
 
 timestamp_patterns = [
     r'(\d{1,2}\s[A-Za-z]{3,9}\s\d{4}\s*,\s*\d{1,2}:\d{2}\s[APap][Mm]{1,2})'
@@ -24,7 +27,7 @@ timestamp_patterns = [
 
 class OCRExtractor:
     def __init__(self):
-        self.client = boto3.client('textract')
+        self.client = boto3.client('textract', region_name=region_name)
         self.results = {
             "amount": None,
             "transaction_id": None,
