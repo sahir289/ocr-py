@@ -3,8 +3,14 @@ import re
 from typing import Optional
 
 import boto3
+# import cv2
+# import numpy as np
+# import pytesseract
 
 from image_processor import ImageProcessor
+# Set Tesseract path for local OCR
+# pytesseract.pytesseract.tesseract_cmd = r"D:\New folder\tesseract.exe"
+# os.environ['TESSDATA_PREFIX'] = r"D:\New folder\tessdata"
 
 region_name = os.environ.get('AWS_REGION')
 
@@ -27,7 +33,9 @@ timestamp_patterns = [
 
 class OCRExtractor:
     def __init__(self):
+        # AWS Textract client (commented out for local development)
         self.client = boto3.client('textract', region_name=region_name)
+        # self.client = None  # Using local OCR instead
         self.results = {
             "amount": None,
             "transaction_id": None,
@@ -37,7 +45,42 @@ class OCRExtractor:
 
     def process_document(self, im_bytes):
         try:
-            # Detect document text using AWS Textract
+            # # Local OCR using Tesseract (instead of AWS Textract)
+            # # Decode bytes to image
+            # im_arr = np.frombuffer(im_bytes, dtype=np.uint8)
+            # img = cv2.imdecode(im_arr, flags=cv2.IMREAD_COLOR)
+            
+            # # Resize image for better OCR
+            # shape = img.shape
+            # img = cv2.resize(img, (int(shape[1] * 1.6), int(shape[0] * 1.6)))
+            
+            # # OCR configuration
+            # config = "-l Devanagari --psm 4 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz:,₹0123456789@.#/"
+            # text = pytesseract.image_to_string(img)
+            
+            # # Convert text to blocks format similar to AWS Textract
+            # blocks = []
+            # lines = text.split('\n')
+            # for line in lines:
+            #     if line.strip():
+            #         # Add LINE block
+            #         blocks.append({
+            #             "BlockType": "LINE",
+            #             "Text": line.strip()
+            #         })
+            #         # Add WORD blocks for each word in the line
+            #         words = line.split()
+            #         for word in words:
+            #             if word.strip():
+            #                 blocks.append({
+            #                     "BlockType": "WORD",
+            #                     "Text": word.strip()
+            #                 })
+            
+            # # print(f"Local OCR result blocks: {len(blocks)}")
+            # return blocks
+            
+            # AWS Textract code (commented out)
             result_json = self.client.detect_document_text(
                 Document={'Bytes': im_bytes})
             print(f"result_json : {result_json['Blocks']}")
@@ -123,14 +166,23 @@ class OCRExtractor:
                 continue
             try:
                 text = block["Text"]
-                cleaned_text = str(text).replace(" ", "")
+                cleaned_text = str(text)  # ❗ don't remove spaces
 
-                pattern = r'^\d{12}$'
-                match = re.match(pattern, cleaned_text)
+                pattern = r'(\b\d{12}\b|' \
+                        r'NEFT[-/: ]?[A-Z0-9]+|' \
+                        r'NEFT\s+UTR\s*[:\-]?\s*[A-Z0-9]+|' \
+                        r'RTGS[-/: ]?[A-Z0-9]+|' \
+                        r'RTGS\s+UTR\s*[:\-]?\s*[A-Z0-9]+|' \
+                        r'IMPS[-/: ]?[A-Z0-9]+|' \
+                        r'IMPS\s+UTR\s*[:\-]?\s*[A-Z0-9]+|' \
+                        r'IMPS\s+Ref(?:erence)?\s*(?:No\.?|Number)?\s*[:\-]?\s*\d{10,20})'
+
+                match = re.search(pattern, cleaned_text, re.IGNORECASE)  # ✅ FIXED
 
                 if match:
                     return match.group(0).strip()
 
+                cleaned_text = str(text).replace(" ", "")
                 pattern = r'UTR:\s*(\s*\d{12})'
                 match = re.search(pattern, cleaned_text)
                 if match:
