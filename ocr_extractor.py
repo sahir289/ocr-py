@@ -180,7 +180,10 @@ class OCRExtractor:
                 match = re.search(pattern, cleaned_text, re.IGNORECASE)  # ✅ FIXED
 
                 if match:
-                    return match.group(0).strip()
+                    text = match.group(0)
+
+                    result = re.findall(r'[^:/-]+$', text.strip())[-1]
+                    return result
 
                 cleaned_text = str(text).replace(" ", "")
                 pattern = r'UTR:\s*(\s*\d{12})'
