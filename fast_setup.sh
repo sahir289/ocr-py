@@ -52,6 +52,7 @@ check_docker_installed() {
 # Function to build the Docker image
 build_docker_image() {
     echo "Building Docker image..."
+    export DOCKER_BUILDKIT=1
     docker build -t $IMAGE_NAME -f $DOCKERFILE_PATH .
 
     if [ $? -ne 0 ]; then
