@@ -8,7 +8,7 @@ import boto3
 # import pytesseract
 
 from image_processor import ImageProcessor
-# Set Tesseract path for local OCR
+# # Set Tesseract path for local OCR
 # pytesseract.pytesseract.tesseract_cmd = r"D:\New folder\tesseract.exe"
 # os.environ['TESSDATA_PREFIX'] = r"D:\New folder\tessdata"
 
@@ -80,7 +80,7 @@ class OCRExtractor:
             # # print(f"Local OCR result blocks: {len(blocks)}")
             # return blocks
             
-            # AWS Textract code (commented out)
+            # # AWS Textract code (commented out)
             result_json = self.client.detect_document_text(
                 Document={'Bytes': im_bytes})
             print(f"result_json : {result_json['Blocks']}")
@@ -162,7 +162,15 @@ class OCRExtractor:
     def extract_transaction_id(self, text_blocks):
         # first preference
         for block in text_blocks:
-            if block["BlockType"] != "WORD":
+            if block["BlockType"] != "WORD": 
+                text = block["Text"]  
+                
+                # Extract Bank Trans Id or UTR Number value
+                bank_trans_pattern = r'(?:Bank\s+Trans\s+Id\.?\:?|UTR\s+Number\.?\:?)\s*(\d{12})'
+                match = re.search(bank_trans_pattern, text, re.IGNORECASE)
+                if match:
+                    transaction_id = match.group(1)
+                    return transaction_id
                 continue
             try:
                 text = block["Text"]
@@ -219,7 +227,7 @@ class OCRExtractor:
                 text = block["Text"]
                 text = str(text).lower()
 
-                amount = re.search(r'amount[\s:]*([\d,]+(?:\.\d{2})?)',
+                amount = re.search(r'(?:amount|settled\s+amt)[\s:]*([\d,]+(?:\.\d{2})?)',
                                    text, re.IGNORECASE)
                 if amount:
                     return amount.group(1)
