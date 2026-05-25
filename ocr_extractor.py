@@ -3,16 +3,16 @@ import re
 from typing import Optional
 
 import boto3
-import cv2
-import numpy as np
-import pytesseract
+# import cv2
+# import numpy as np
+# import pytesseract
 
 from image_processor import ImageProcessor
-# Set Tesseract path for local OCR
-pytesseract.pytesseract.tesseract_cmd = r"D:\New folder\tesseract.exe"
-os.environ['TESSDATA_PREFIX'] = r"D:\New folder\tessdata"
+# # Set Tesseract path for local OCR
+# pytesseract.pytesseract.tesseract_cmd = r"D:\New folder\tesseract.exe"
+# os.environ['TESSDATA_PREFIX'] = r"D:\New folder\tessdata"
 
-# region_name = os.environ.get('AWS_REGION')
+region_name = os.environ.get('AWS_REGION')
 
 timestamp_patterns = [
     r'(\d{1,2}\s[A-Za-z]{3,9}\s\d{4}\s*,\s*\d{1,2}:\d{2}\s[APap][Mm]{1,2})'
@@ -34,8 +34,8 @@ timestamp_patterns = [
 class OCRExtractor:
     def __init__(self):
         # AWS Textract client (commented out for local development)
-        # self.client = boto3.client('textract', region_name=region_name)
-        self.client = None  # Using local OCR instead
+        self.client = boto3.client('textract', region_name=region_name)
+        # self.client = None  # Using local OCR instead
         self.results = {
             "amount": None,
             "transaction_id": None,
@@ -45,46 +45,46 @@ class OCRExtractor:
 
     def process_document(self, im_bytes):
         try:
-            # Local OCR using Tesseract (instead of AWS Textract)
-            # Decode bytes to image
-            im_arr = np.frombuffer(im_bytes, dtype=np.uint8)
-            img = cv2.imdecode(im_arr, flags=cv2.IMREAD_COLOR)
+            # # Local OCR using Tesseract (instead of AWS Textract)
+            # # Decode bytes to image
+            # im_arr = np.frombuffer(im_bytes, dtype=np.uint8)
+            # img = cv2.imdecode(im_arr, flags=cv2.IMREAD_COLOR)
             
-            # Resize image for better OCR
-            shape = img.shape
-            img = cv2.resize(img, (int(shape[1] * 1.6), int(shape[0] * 1.6)))
+            # # Resize image for better OCR
+            # shape = img.shape
+            # img = cv2.resize(img, (int(shape[1] * 1.6), int(shape[0] * 1.6)))
             
-            # OCR configuration
-            config = "-l Devanagari --psm 4 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz:,₹0123456789@.#/"
-            text = pytesseract.image_to_string(img)
+            # # OCR configuration
+            # config = "-l Devanagari --psm 4 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz:,₹0123456789@.#/"
+            # text = pytesseract.image_to_string(img)
             
-            # Convert text to blocks format similar to AWS Textract
-            blocks = []
-            lines = text.split('\n')
-            for line in lines:
-                if line.strip():
-                    # Add LINE block
-                    blocks.append({
-                        "BlockType": "LINE",
-                        "Text": line.strip()
-                    })
-                    # Add WORD blocks for each word in the line
-                    words = line.split()
-                    for word in words:
-                        if word.strip():
-                            blocks.append({
-                                "BlockType": "WORD",
-                                "Text": word.strip()
-                            })
+            # # Convert text to blocks format similar to AWS Textract
+            # blocks = []
+            # lines = text.split('\n')
+            # for line in lines:
+            #     if line.strip():
+            #         # Add LINE block
+            #         blocks.append({
+            #             "BlockType": "LINE",
+            #             "Text": line.strip()
+            #         })
+            #         # Add WORD blocks for each word in the line
+            #         words = line.split()
+            #         for word in words:
+            #             if word.strip():
+            #                 blocks.append({
+            #                     "BlockType": "WORD",
+            #                     "Text": word.strip()
+            #                 })
             
-            # print(f"Local OCR result blocks: {len(blocks)}")
-            return blocks
+            # # print(f"Local OCR result blocks: {len(blocks)}")
+            # return blocks
             
-            # # # AWS Textract code (commented out)
-            # result_json = self.client.detect_document_text(
-            #     Document={'Bytes': im_bytes})
-            # print(f"result_json : {result_json['Blocks']}")
-            # return result_json["Blocks"]
+            # # AWS Textract code (commented out)
+            result_json = self.client.detect_document_text(
+                Document={'Bytes': im_bytes})
+            print(f"result_json : {result_json['Blocks']}")
+            return result_json["Blocks"]
         except Exception as e:
             print(f"Error processing document: {e}")
             raise
