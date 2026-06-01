@@ -10,7 +10,7 @@ import boto3
 from image_processor import ImageProcessor
 # # Set Tesseract path for local OCR
 # pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
-# pref = os.environ.get('TESSDATA_PREFIX')
+# os.environ['TESSDATA_PREFIX'] = r"C:\Program Files\Tesseract-OCR\tessdata"
 
 region_name = os.environ.get('AWS_REGION')
 
@@ -177,6 +177,8 @@ class OCRExtractorpayout:
             try:
                 text = block["Text"]
                 cleaned_text = str(text)  # ❗ don't remove spaces
+                if "@ok" in cleaned_text:
+                    continue
 
                 pattern = r'(\b\d{12}\b|' \
                         r'NEFT[-/: ]?[A-Z0-9]+|' \
