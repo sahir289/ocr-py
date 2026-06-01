@@ -9,8 +9,36 @@ import boto3
 
 from image_processor import ImageProcessor
 # # Set Tesseract path for local OCR
-# pytesseract.pytesseract.tesseract_cmd = r"D:\New folder\tesseract.exe"
-# os.environ['TESSDATA_PREFIX'] = r"D:\New folder\tessdata"
+# pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+
+
+# def _ensure_tessdata_prefix():
+#     """Ensure TESSDATA_PREFIX points to a valid tessdata directory if possible."""
+#     pref = os.environ.get('TESSDATA_PREFIX')
+#     if pref and os.path.isdir(pref):
+#         return pref
+
+#     candidates = [
+#         r"C:\Program Files\Tesseract-OCR\tessdata",
+#         r"C:\Program Files (x86)\Tesseract-OCR\tessdata",
+#     ]
+
+#     try:
+#         exe_dir = os.path.dirname(pytesseract.pytesseract.tesseract_cmd)
+#         candidates.append(os.path.join(exe_dir, 'tessdata'))
+#     except Exception:
+#         pass
+
+#     for c in candidates:
+#         if c and os.path.isdir(c):
+#             os.environ['TESSDATA_PREFIX'] = c
+#             return c
+
+#     return None
+
+
+# # Attempt to auto-set TESSDATA_PREFIX
+# _ensure_tessdata_prefix()
 
 region_name = os.environ.get('AWS_REGION')
 
@@ -184,6 +212,7 @@ class OCRExtractorpayout:
                         r'RTGS[-/: ]?[A-Z0-9]+|' \
                         r'RTGS\s+UTR\s*[:\-]?\s*[A-Z0-9]+|' \
                         r'IMPS[-/: ]?[A-Z0-9]+|' \
+                        r'2A[-/: ]?[12]+\b|' \
                         r'IMPS\s+UTR\s*[:\-]?\s*[A-Z0-9]+|' \
                         r'IMPS\s+Ref(?:erence)?\s*(?:No\.?|Number)?\s*[:\-]?\s*\d{10,20})'
 
@@ -281,7 +310,9 @@ class OCRExtractorpayout:
 
 class OCRExtractorpayin:
     def __init__(self):
-        self.client = boto3.client('textract', region_name=region_name)
+        # AWS Textract client (commented out for local development)
+        # self.client = boto3.client('textract', region_name=region_name)
+        self.client = None  # Using local OCR instead
         self.results = {
             "amount": None,
             "transaction_id": None,
@@ -291,7 +322,41 @@ class OCRExtractorpayin:
 
     def process_document(self, im_bytes):
         try:
-            # Detect document text using AWS Textract
+            # # Local OCR using Tesseract (instead of AWS Textract)
+            # # Decode bytes to image
+            # im_arr = np.frombuffer(im_bytes, dtype=np.uint8)
+            # img = cv2.imdecode(im_arr, flags=cv2.IMREAD_COLOR)
+            
+            # # Resize image for better OCR
+            # shape = img.shape
+            # img = cv2.resize(img, (int(shape[1] * 1.6), int(shape[0] * 1.6)))
+            
+            # # OCR configuration
+            # text = pytesseract.image_to_string(img)
+            
+            # # Convert text to blocks format similar to AWS Textract
+            # blocks = []
+            # lines = text.split('\n')
+            # for line in lines:
+            #     if line.strip():
+            #         # Add LINE block
+            #         blocks.append({
+            #             "BlockType": "LINE",
+            #             "Text": line.strip()
+            #         })
+            #         # Add WORD blocks for each word in the line
+            #         words = line.split()
+            #         for word in words:
+            #             if word.strip():
+            #                 blocks.append({
+            #                     "BlockType": "WORD",
+            #                     "Text": word.strip()
+            #                 })
+            
+            # # print(f"Local OCR result blocks: {len(blocks)}")
+            # return blocks
+            
+            # AWS Textract code (commented out)
             result_json = self.client.detect_document_text(
                 Document={'Bytes': im_bytes})
             print(f"result_json : {result_json['Blocks']}")
