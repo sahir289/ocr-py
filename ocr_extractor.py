@@ -167,7 +167,7 @@ class OCRExtractorpayout:
                     text = str(block["Text"])
 
                     # Extract Bank Trans Id or UTR Number value
-                    bank_trans_pattern = r'(?:(?:Bank\s+Trans\s+Id\.?\:?|UTR\s+Number\.?\:?|IMPS\s*/\s*P2A\s*/\s*)(\d{12}))'
+                    bank_trans_pattern = r'(?:(?:Bank\s+Trans\s+Id\.?\:?|UTR\s+Number\.?\:?|IMPS\s*/\s*P2A\s*/\s*|IMPSOUT\s*)(\d{12}))'
                     match = re.search(bank_trans_pattern, text, re.IGNORECASE)
                     if match:
                         return match.group(1).strip()
