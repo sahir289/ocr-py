@@ -9,8 +9,8 @@ import boto3
 
 from image_processor import ImageProcessor
 # # Set Tesseract path for local OCR
-# pytesseract.pytesseract.tesseract_cmd = r"D:\New folder\tesseract.exe"
-# os.environ['TESSDATA_PREFIX'] = r"D:\New folder\tessdata"
+# pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+# pref = os.environ.get('TESSDATA_PREFIX')
 
 region_name = os.environ.get('AWS_REGION')
 
@@ -184,6 +184,7 @@ class OCRExtractorpayout:
                         r'RTGS[-/: ]?[A-Z0-9]+|' \
                         r'RTGS\s+UTR\s*[:\-]?\s*[A-Z0-9]+|' \
                         r'IMPS[-/: ]?[A-Z0-9]+|' \
+                        r'2A[-/: ]?[12]+\b|' \
                         r'IMPS\s+UTR\s*[:\-]?\s*[A-Z0-9]+|' \
                         r'IMPS\s+Ref(?:erence)?\s*(?:No\.?|Number)?\s*[:\-]?\s*\d{10,20})'
 
@@ -281,7 +282,9 @@ class OCRExtractorpayout:
 
 class OCRExtractorpayin:
     def __init__(self):
+        # AWS Textract client (commented out for local development)
         self.client = boto3.client('textract', region_name=region_name)
+        # self.client = None  # Using local OCR instead
         self.results = {
             "amount": None,
             "transaction_id": None,
@@ -290,8 +293,8 @@ class OCRExtractorpayin:
         }
 
     def process_document(self, im_bytes):
-        try:
-            # Detect document text using AWS Textract
+        try:            
+            # AWS Textract code (commented out)
             result_json = self.client.detect_document_text(
                 Document={'Bytes': im_bytes})
             print(f"result_json : {result_json['Blocks']}")
