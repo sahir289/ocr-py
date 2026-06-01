@@ -80,7 +80,7 @@ class OCRExtractorpayout:
             # # print(f"Local OCR result blocks: {len(blocks)}")
             # return blocks
             
-            # # AWS Textract code (commented out)
+            # AWS Textract code (commented out)
             result_json = self.client.detect_document_text(
                 Document={'Bytes': im_bytes})
             print(f"result_json : {result_json['Blocks']}")
@@ -167,7 +167,7 @@ class OCRExtractorpayout:
                     text = str(block["Text"])
 
                     # Extract Bank Trans Id or UTR Number value
-                    bank_trans_pattern = r'(?:(?:Bank\s+Trans\s+Id\.?\:?|UTR\s+Number\.?\:?|IMPS\s*/\s*P2A\s*/\s*|IMPSOUT\s*)(\d{12}))'
+                    bank_trans_pattern = r'(?:(?:Bank\s+Trans\s+Id\.?\:?|UTR\s+Number\.?\:?|IMPS\s*/\s*P2A\s*/\s*|IMPSOUT\s*|IMP-S\s*/\s*P2A\s*/\s*[^/]+\s*/\s*)(\d{10,20}))'
                     match = re.search(bank_trans_pattern, text, re.IGNORECASE)
                     if match:
                         return match.group(1).strip()
