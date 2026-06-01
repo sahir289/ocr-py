@@ -5,7 +5,7 @@ import uvicorn
 from fastapi import FastAPI, Body
 from fastapi.middleware.cors import CORSMiddleware
 
-from ocr_extractor import OCRExtractor
+from ocr_extractor import OCRExtractorpayin,OCRExtractorpayout
 
 app = FastAPI(
     title="Optical Character Recognition Server",
@@ -35,7 +35,7 @@ def ping():
 @app.post("/ocr", tags=["get_ocr"])
 def get_ocr(file_data: Any = Body(None)):
     try:
-        ocr_extractor = OCRExtractor()
+        ocr_extractor = OCRExtractorpayin()
         results = ocr_extractor.get_extracted_data(file_data)
         print(f"results : {results}")
         return {
@@ -47,6 +47,20 @@ def get_ocr(file_data: Any = Body(None)):
         print(f"Error: {e}")
         return {"status": "failure", "data": "Something went wrong"}
 
+@app.post("/ocr/payout", tags=["get_ocr"])
+def get_ocr(file_data: Any = Body(None)):
+    try:
+        ocr_extractor = OCRExtractorpayout()
+        results = ocr_extractor.get_extracted_data(file_data)
+        print(f"results : {results}")
+        return {
+            "status": "success",
+            "data": results
+        }
+    except Exception as e:
+        # Log and handle any other errors
+        print(f"Error: {e}")
+        return {"status": "failure", "data": "Something went wrong"}
 
 if __name__ == '__main__':
     try:
