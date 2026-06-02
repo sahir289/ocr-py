@@ -167,10 +167,10 @@ class OCRExtractorpayout:
                     text = str(block["Text"])
 
                     # Extract Bank Trans Id or UTR Number value
-                    bank_trans_pattern = r'(?:(?:Bank\s+Trans\s+Id\.?\:?|UTR\s+Number\.?\:?|IMPS\s*/\s*P2A\s*/\s*|IMPSOUT\s*|IMP-S\s*/\s*P2A\s*/\s*[^/]+\s*/\s*)(\d{10,20}))'
+                    bank_trans_pattern = r'(?:(?:Bank\s+Trans\s+Id\.?\:?|UTR\s+Number\.?\:?|IMPS\s*[:/]\s*PAY\s*[:/]\s*|IMPS\s*/\s*P2A\s*/\s*|IMPSOUT\s*|IMP-S\s*/\s*P2A\s*/\s*[^/]+\s*/\s*)(\d{10,20}))'
                     match = re.search(bank_trans_pattern, text, re.IGNORECASE)
                     if match:
-                        return match.group(1).strip()
+                        return re.sub(r'\D', '', match.group(1).strip())
                 except Exception as exc:
                     print(f"Error in extract_transaction_id with LINE : {exc}")
                 continue
